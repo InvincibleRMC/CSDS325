@@ -6,20 +6,20 @@ import signal
 from typing import List
 
 
-def greeting():
+
+def greeting(message_contents: str):
     print("TODO")
 
 
-def message():
+def message(message_contents: str):
     print("TODO")
 
 
-def incoming():
+def incoming(message_contents: str):
     print("TODO")
 
 
 UDI_IP = "localhost"
-UDP_PORT = 50000
 
 
 def main(args: List[str]):
@@ -45,7 +45,7 @@ def main(args: List[str]):
         else:
             print("Unkown message type ignoring message")
 
-        print(data.decode)
+        print(json)
         if not data:
             time.sleep(0.01)
 

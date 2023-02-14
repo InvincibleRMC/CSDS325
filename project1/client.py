@@ -1,13 +1,25 @@
 import socket
 import signal
-# Kills with Control + C
-signal.signal(signal.SIGINT, signal.SIG_DFL)
+import sys
+from typing import List
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-UDI_IP = "localhost"
-UDP_PORT = 50000
-MESSAGE = b"HI BESTIE"
-s.sendto(MESSAGE, (UDI_IP, UDP_PORT))
-data = s.recv(1024)
-s.close()
-print('Received', repr(data))
+
+def send_message():
+    print("TODO")
+
+
+def main(args: List[str]):
+    # Kills with Control + C
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_ip = args[1]
+    udp_port = args[2]
+    MESSAGE = b"MESSAGE HI BESTIE"
+    s.sendto(MESSAGE, (udp_ip, udp_port))
+    data = s.recv(1024)
+    s.close()
+    print('Received', repr(data))
+
+
+main(sys.argv)
