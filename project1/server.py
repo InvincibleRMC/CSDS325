@@ -5,51 +5,53 @@ import time
 import signal
 from typing import List
 
+INCOMING: str = "INCOMING"
 
 
-def greeting(message_contents: str):
-    print("TODO")
+class Server:
 
-
-def message(message_contents: str):
-    print("TODO")
-
-
-def incoming(message_contents: str):
-    print("TODO")
-
-
-UDI_IP = "localhost"
-
-
-def main(args: List[str]):
-    udp_port_num: int = int(args[1])
+    UDP_IP = "localhost"
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((UDI_IP, udp_port_num))
+    client_list: List[str] = []
 
-    # Kills with Control + C
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    def greeting(self, message_contents: str):
+        self.client_list.append(message_contents)
 
-    while 1:
-        data, addr = s.recvfrom(1024)
-        json = data.decode()
-        message_type = json.split(" ")[0]
-        message_contents = json.split(" ", 1)[1]
+    def message(self, message_contents: str):
+        for clients in self.client_list:
+            self.s.sendto((INCOMING + " " + message_contents).encode(), clients)
 
-        if message_type == "GREETING":
-            greeting(message_contents)
-        elif message_type == "MESSAGE":
-            message(message_contents)
-        elif message_type == "INCOMNIG":
-            incoming(message_contents)
-        else:
-            print("Unkown message type ignoring message")
+    def incoming(self, message_contents: str):
+        print("TODO")
 
-        print(json)
-        if not data:
-            time.sleep(0.01)
+    def main(self, args: List[str]):
+        udp_port_num: int = int(args[1])
 
-    s.close()
+        self.s.bind((self.UDP_IP, udp_port_num))
+
+        # Kills with Control + C
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+        while 1:
+            data, addr = self.s.recvfrom(1024)
+            json = data.decode()
+            message_type = json.split(" ")[0]
+            message_contents = json.split(" ", 1)[1]
+
+            if message_type == "GREETING":
+                self.greeting(message_contents)
+            elif message_type == "MESSAGE":
+                self.message(message_contents)
+            # elif message_type == "INCOMNIG":
+            #     self.incoming(message_contents)
+            else:
+                print("Unkown message type ignoring message")
+
+            print(json)
+            if not data:
+                time.sleep(0.01)
+
+        s.close()
 
 
-main(sys.argv)
+Server().main(sys.argv)
