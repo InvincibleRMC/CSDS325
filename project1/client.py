@@ -1,4 +1,8 @@
 import socket
+import signal
+# Kills with Control + C
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 UDI_IP = "localhost"
 UDP_PORT = 50000
