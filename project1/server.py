@@ -10,6 +10,7 @@ INCOMING: str = "INCOMING"
 
 class Server:
 
+    # Could take from commandline but needed by requirements
     UDP_IP: str = "localhost"
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_list: List[Tuple[str]] = []
