@@ -1,7 +1,5 @@
-"""Server for CWRU Plan+"""
 import socket
 import sys
-import time
 import signal
 from typing import List, Tuple
 
@@ -16,38 +14,39 @@ class Server:
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_list: List[Tuple[str]] = []
 
-    def greeting(self, message_contents: Tuple[str]):
-        self.client_list.append(message_contents)
+    def greeting(self, addr: Tuple[str]):
+        """Accepts greeting ands adds client to known list"""
+        self.client_list.append(addr)
 
-    def message(self, message_contents: str):
+    def message(self, sender: Tuple[str], message_contents: str):
+        """Messages all clients from MESSAGE"""
         for client in self.client_list:
-            self.s.sendto((INCOMING + " " + str(client) + " " + message_contents).encode(), client)
-            print("Finished Sending INCOMING")
+            self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
 
     def main(self, args: List[str]):
-        udp_port_num: int = int(args[1])
-
-        self.s.bind((self.UDP_IP, udp_port_num))
+        """Initializes Server"""
+        # args[1] is port
+        self.s.bind((self.UDP_IP, int(args[1])))
 
         # Kills with Control + C
         signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-        while 1:
+        print("Server Running")
+        while True:
+            # Recives message and address of sender
             data, addr = self.s.recvfrom(1024)
+            # Decodes and splits data
             json = data.decode()
             message_type = json.split(" ")[0]
-            message_contents = json.split(" ", 1)[1]
 
+            # Parses Message
             if message_type == GREETING:
                 self.greeting(addr)
             elif message_type == MESSAGE:
-                self.message(message_contents)
+                self.message(addr, json.split(" ", 1)[1])
             elif message_type == INCOMING:
                 continue
             else:
                 print("Unkown message type ignoring message")
-
-        self.s.close()
 
 
 Server().main(sys.argv)
