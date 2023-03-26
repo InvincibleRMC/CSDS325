@@ -34,8 +34,10 @@ class UnreliableSocket(socket.socket):
         data, addr = super().recvfrom(1472)
 
         # Data corruption
-        if random.random() < 0.05:
-            data = data.capitalize()
+        if random.random() < 0.1:
+            data = (data.decode()).split(" ", maxsplit=1)
+            data = data[0] + " 15" + data[1]
+            data = data.encode()
 
         return data, addr
 

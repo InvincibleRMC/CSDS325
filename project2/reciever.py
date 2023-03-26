@@ -36,9 +36,12 @@ class Reciever():
                 if PacketHeader(data=data).get_msg_type() != MSGType.DATA:
                     continue
 
-                text = data.decode().split(" ", maxsplit=5)
+                text = data.decode().split(" ", maxsplit=4)
                 print(text)
-                f.write(text[5])
+                if len(text) == 20:
+                    f.write("\n")
+                else:
+                    f.write(f'{text[4]}\n')
 
         print("Recieved Download!")
 

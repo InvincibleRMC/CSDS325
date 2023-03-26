@@ -21,37 +21,34 @@ class Sender():
         while True:
             self.s.connect(address)
             (data, addr) = self.s.recv()
-            print(data)
+            # print(data)
             if data.decode() == "Drop":
                 continue
-
-            packetHeader = PacketHeader(data=data)
-            print(packetHeader.get_seq_num())
-            print(self.s.seq_num)
-            if packetHeader.get_seq_num() == self.s.seq_num and packetHeader.get_msg_type() == MSGType.ACK:
-                break
+            break
 
         print("Connection Acknowledged")
 
         with open("alice.txt", "r") as f:
             text = f.read().splitlines()
-            print(text)
-            return
             linetotal = len(text)
             counter = 0
             while True:
-                counter = counter + 1
-                if counter == linetotal:
+
+                if counter >= linetotal:
                     self.s.close(address)
                     (data, addr) = self.s.recv()
+                    if data.decode() == "Drop":
+                        continue
+
                     packetHeader = PacketHeader(data=data)
                     if packetHeader.get_seq_num() == self.s.seq_num and packetHeader.get_msg_type() == MSGType.ACK:
                         break
+                else:
+                    print(f'Sending {text[counter].encode()}!')
+                    self.s.send(MSGType.DATA, text[counter].encode(), address)
+                    # f.write(text)
 
-                print(f'Sending {text[counter].encode()}!')
-                self.s.send(MSGType.DATA, text[counter].encode(), address)
-                # f.write(text)
-
+                counter = counter + 1
         print("Sent File!")
 
 

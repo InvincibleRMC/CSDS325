@@ -18,13 +18,14 @@ class RDTSocket(UnreliableSocket):
         return (data, address)
 
     def connect(self, address: Tuple[str, int]):
+        self.accepted = True
         self.send(MSGType.START, bytes(), address)
 
     def send(self, msgtype: MSGType, data: bytes, address: Tuple[str, int]):
         length: int = len(data)
         self.seq_num = self.seq_num + 1
         header: bytes = PacketHeader(msgtype, self.seq_num, length).to_bytes()
-        self.sendto((header.decode() + data.decode()).encode(), address)
+        self.sendto((header.decode() + " " + data.decode()).encode(), address)
 
     def recv(self) -> Tuple[bytes, Tuple[str, int]]:
         (data, address) = self.recvfrom()
@@ -37,12 +38,12 @@ class RDTSocket(UnreliableSocket):
             if PacketHeader(data=data).get_msg_type != MSGType.ACK:
                 self.send(MSGType.ACK, bytes(), address)
 
-            print("ever verified?")
-
             if PacketHeader(data=data).get_msg_type() == MSGType.START:
+                # print("Recieved Start MSG")
                 return (data, address)
 
             if self.accepted:
+                # print("Recieved Other MSG")
                 return (data, address)
 
         return ("Drop".encode(), None)
