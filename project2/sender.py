@@ -12,7 +12,7 @@ class Sender():
         if len(args) != 4:
             raise SystemError()
 
-        self.s = RDTSocket()
+        self.s = RDTSocket("Sender")
         self.reciever_ip = args[1]
         self.reciever_port = int(args[2])
         self.window_size = int(args[3])
@@ -20,7 +20,7 @@ class Sender():
         address = (self.reciever_ip, self.reciever_port)
 
         self.recieved_window: List[bool] = [False]*self.window_size
-
+        print("Started Sender!")
         while True:
             self.s.connect(address)
             (data, addr) = self.s.recv()
@@ -31,11 +31,14 @@ class Sender():
 
         print("Connection Acknowledged")
 
+        counter = 1
+
         with open("alice.txt", "r") as f:
             text = f.read().splitlines()
             linetotal = len(text)
             # counter = 0
             while True:
+                # print(rece=)
 
                 for i in range(self.window_size):
                     if self.recieved_window[i]:
@@ -53,21 +56,26 @@ class Sender():
                     if data.decode() == "Drop":
                         continue
 
-                    packetHeader = PacketHeader(data=data)
-                    if packetHeader.get_seq_num() == self.s.seq_num and packetHeader.get_msg_type() == MSGType.ACK:
+                    # packetHeader =
+                    if PacketHeader(data=data).get_msg_type() == MSGType.ACK:
                         break
                 else:
                     for i in range(self.window_size):
                         if self.s.seq_num >= linetotal:
                             continue
+                        if text[self.s.seq_num + i] == " ":
+                            text[self.s.seq_num + i] = "\n"
+
                         print(f'Sending {text[self.s.seq_num + i].encode()}!')
-                        self.s.send(MSGType.DATA, text[i].encode(), address)
+                        self.s.send(MSGType.DATA, text[self.s.seq_num + i].encode(), address)
 
                 (data, addr) = self.s.recv()
                 print(data)
                 if data.decode() == "Drop":
                     continue
                 else:
+                    print(PacketHeader(data=data).get_msg_type())
+                    print(PacketHeader(data=data).get_seq_num())
                     self.recieved_window[PacketHeader(data=data).get_seq_num() % self.window_size] = True
 
                 time.sleep(0.5)

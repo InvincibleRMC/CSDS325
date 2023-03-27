@@ -1,18 +1,21 @@
 from utility import UnreliableSocket, PacketHeader, MSGType
 from typing import Tuple
 
+NO_ADDRESS = ("None", -1)
+
 
 class RDTSocket(UnreliableSocket):
-    def __init__(self):
+    def __init__(self, name: str):
         super().__init__()
         self.seq_num = 0
         self.accepted = False
+        self.name = name
 
     def accept(self) -> Tuple[bytes, Tuple[str, int]]:
         """Custom accept"""
         (data, address) = self.recv()
-        if address is None:
-            return (None, None)
+        if address == NO_ADDRESS:
+            return (data, NO_ADDRESS)
 
         self.accepted = True
         return (data, address)
@@ -30,12 +33,12 @@ class RDTSocket(UnreliableSocket):
     def recv(self) -> Tuple[bytes, Tuple[str, int]]:
         (data, address) = self.recvfrom()
 
-        # print(str(data) + str(address))
         if data is None or address is None:
-            return ("Drop".encode(), None)
+            return ("Drop".encode(), NO_ADDRESS)
 
         if PacketHeader(data=data).verify_packet():
-            if PacketHeader(data=data).get_msg_type != MSGType.ACK:
+            # Send ACK MSG automatically
+            if PacketHeader(data=data).get_msg_type() != MSGType.ACK:
                 self.send(MSGType.ACK, bytes(), address)
 
             if PacketHeader(data=data).get_msg_type() == MSGType.START:
@@ -46,7 +49,7 @@ class RDTSocket(UnreliableSocket):
                 # print("Recieved Other MSG")
                 return (data, address)
 
-        return ("Drop".encode(), None)
+        return ("Drop".encode(), NO_ADDRESS)
 
     def close(self, address: Tuple[str, int]):
         self.send(MSGType.END, bytes(), address)
