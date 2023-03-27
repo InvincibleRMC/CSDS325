@@ -16,6 +16,7 @@ class Reciever():
         self.window_size = int(args[2])
 
         self.s.bind(("localhost", self.reciever_port))
+        self.recieved_window: List[bool] = [False]*self.window_size
 
         while not self.s.accepted:
             self.s.accept()
@@ -26,7 +27,7 @@ class Reciever():
             while True:
                 (data, addr) = self.s.recv()
 
-                print(data)
+                # print(data)
                 if data.decode() == "Drop":
                     continue
 
@@ -34,6 +35,9 @@ class Reciever():
                     break
 
                 if PacketHeader(data=data).get_msg_type() != MSGType.DATA:
+                    continue
+
+                if PacketHeader(data=data).get_seq_num() > self.s.seq_num + self.window_size:
                     continue
 
                 text = data.decode().split(" ", maxsplit=4)

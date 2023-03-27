@@ -23,14 +23,14 @@ class RDTSocket(UnreliableSocket):
 
     def send(self, msgtype: MSGType, data: bytes, address: Tuple[str, int]):
         length: int = len(data)
-        self.seq_num = self.seq_num + 1
+        # self.seq_num = self.seq_num + 1
         header: bytes = PacketHeader(msgtype, self.seq_num, length).to_bytes()
         self.sendto((header.decode() + " " + data.decode()).encode(), address)
 
     def recv(self) -> Tuple[bytes, Tuple[str, int]]:
         (data, address) = self.recvfrom()
 
-        print(str(data) + str(address))
+        # print(str(data) + str(address))
         if data is None or address is None:
             return ("Drop".encode(), None)
 
