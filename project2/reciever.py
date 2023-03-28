@@ -42,7 +42,7 @@ class Reciever():
             # Skip Dupes
             if self.previous_msgs.get(ack_num) is not None:
                 continue
-            print("after continue")
+
             self.s.recieved_acks.append(ack_num)
             self.previous_msgs.update({ack_num: msg})
 
