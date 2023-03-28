@@ -48,7 +48,6 @@ class Sender():
                         if text[seq_num] == " ":
                             text[seq_num] = "\n"
 
-
                         msg: bytes = text[seq_num].encode()
                         print(f'Sending {msg}!')
                         self.s.send(MSGType.DATA, msg, seq_num, address)
