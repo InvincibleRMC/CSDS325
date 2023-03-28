@@ -78,13 +78,10 @@ class PacketHeader():
             self.msg_type = msg_type
             self.seq_num = seq_num
             self.length = length
-            self.checksum = self.checksum_construct(msg_type, seq_num, length)
+            self.checksum = self.compute_checksum()
 
     def compute_checksum(self) -> int:
         return zlib.crc32(str(self.msg_type + self.seq_num + self.length).encode())  # TA said we could use package for checksum
-
-    def checksum_construct(self, msg_type: MSGType, seq_num: int, length: int) -> int:
-        return zlib.crc32(str(msg_type + seq_num + length).encode())  # TA said we could use package for checksum
 
     def verify_packet(self):
         return self.compute_checksum() == self.checksum
