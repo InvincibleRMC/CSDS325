@@ -29,13 +29,12 @@ class RDTSocket(UnreliableSocket):
 
     def accept(self) -> Tuple[bytes, Tuple[str, int]]:
         """Custom accept"""
-        (data, address) = self.recv()
+        data, address = self.recv()
         if address == NO_ADDRESS:
-            return (data, NO_ADDRESS)
+            return data, NO_ADDRESS
 
-        print(data)
         self.accepted = True
-        return (data, address)
+        return data, address
 
     def connect(self, address: Tuple[str, int]):
         self.accepted = True
@@ -47,16 +46,16 @@ class RDTSocket(UnreliableSocket):
         self.sendto((header.decode() + " " + data.decode()).encode(), address)
 
     def recv(self) -> Tuple[bytes, Tuple[str, int]]:
-        (data, address) = self.recvfrom()
+        data, address = self.recvfrom()
 
         if data is None or address is None:
-            return ("Drop".encode(), NO_ADDRESS)
+            return "Drop".encode(), NO_ADDRESS
 
         ph = PacketHeader(data=data)
 
-        # Already
+        # Window gets full skip
         if len(self.recieved_acks) > self.window_size:
-            return ("Drop".encode(), NO_ADDRESS)
+            return "Drop".encode(), NO_ADDRESS
 
         if ph.verify_packet():
             if ph.get_msg_type() == MSGType.END:
@@ -72,15 +71,15 @@ class RDTSocket(UnreliableSocket):
                 self.send(MSGType.ACK, bytes(), seq_num, address)
 
             if ph.get_seq_num() > self.N + self.window_size:
-                return ("Drop".encode(), NO_ADDRESS)
+                return "Drop".encode(), NO_ADDRESS
 
             if ph.get_msg_type() == MSGType.START:
-                return (data, address)
+                return data, address
 
             if self.accepted:
-                return (data, address)
+                return data, address
 
-        return ("Drop".encode(), NO_ADDRESS)
+        return "Drop".encode(), NO_ADDRESS
 
     def close(self, address: Tuple[str, int]):
         self.send(MSGType.END, bytes(), self.N, address)

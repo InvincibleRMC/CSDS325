@@ -1,8 +1,8 @@
 from enum import IntEnum
 import socket
-# import signal
 from typing import Tuple, Union, List
-# import sys
+import threading
+import time
 import random
 import zlib
 
@@ -46,7 +46,14 @@ class UnreliableSocket(socket.socket):
         return data, addr
 
     def sendto(self, data: bytes, address: Tuple[str, int]):
-        # print(address)
+        # Duplicate Msg
+        if random.random() < 0.1:
+            super().sendto(data, address)
+        # Delay Message
+        if random.random() < 0.75:
+            t1 = threading.Thread(target=lambda: time.sleep(0.1))
+            t1.start()
+
         super().sendto(data, address)
 
     def close(self):
@@ -55,7 +62,7 @@ class UnreliableSocket(socket.socket):
 
 class PacketHeader():
 
-    msg_type: MSGType  # 0: START; 1: END; 2: DATA; 3: ACK
+    msg_type: MSGType  # 0: START; 1: END; 2: DATA; 3: ACK, 4: END_ACK
     seq_num: int  # Described below
     length: int  # Length of data; 0 for ACK, START and END packets
     checksum: int  # 32-bit CRC
@@ -93,17 +100,3 @@ class PacketHeader():
 
     def get_seq_num(self) -> int:
         return self.seq_num
-
-
-# def main():
-#     # print((str(1).encode()+str(2)).decode())
-#     print(PacketHeader(MSGType.START, 23, 20).to_bytes())
-#     print(PacketHeader(data=b'0 23 20 1159954462').verify_packet())
-#     print(PacketHeader(data=b'1 23 20 1159954462').verify_packet())
-#     print(PacketHeader(data=b'0 23 20 119954462').verify_packet())
-#     print(PacketHeader(data=b'0 1 20 1159954462').verify_packet())
-#     print(PacketHeader(data=b'0 23 5 6159954462').verify_packet())
-#     print(PacketHeader(MSGType.ACK, 0, 20).to_string())
-
-
-# main()
