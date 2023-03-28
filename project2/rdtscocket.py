@@ -15,16 +15,11 @@ class RDTSocket(UnreliableSocket):
         self.recieved_acks: List[int] = []
 
     def num_inorder(self) -> int:
-        if len(self.recieved_acks) == 0:
-            return self.N
-
-        # count = 0
-        sorted_acks = (self.recieved_acks.copy())
+        sorted_acks = self.recieved_acks.copy()
         sorted_acks.sort()
 
         for ack in sorted_acks:
             if ack == self.N:
-                # count = count + 1
                 self.N = self.N + 1
                 self.recieved_acks.remove(ack)
             else:
@@ -48,8 +43,6 @@ class RDTSocket(UnreliableSocket):
 
     def send(self, msgtype: MSGType, data: bytes, seq_num: int, address: Tuple[str, int]):
         length: int = len(data)
-        # self.seq_num = self.seq_num + 1
-
         header: bytes = PacketHeader(msgtype, seq_num, length).to_bytes()
         self.sendto((header.decode() + " " + data.decode()).encode(), address)
 
@@ -61,39 +54,30 @@ class RDTSocket(UnreliableSocket):
 
         ph = PacketHeader(data=data)
 
-        # Packet not within window
-
         # Already
         if len(self.recieved_acks) > self.window_size:
             return ("Drop".encode(), NO_ADDRESS)
 
         if ph.verify_packet():
-            # Send ACK MSG automatically
-            if ph.get_msg_type() != MSGType.ACK:
-                print(data)
-                # print(self.seq_num)
-                # print(self.name)
-                print(f'N = {self.N}')
-                seq_num = ph.get_seq_num()
+            if ph.get_msg_type() == MSGType.END:
+                self.send(MSGType.END_ACK, bytes(), ph.get_seq_num(), address)
 
+            # Send ACK MSG automatically
+            elif ph.get_msg_type() != MSGType.ACK:
+                seq_num = ph.get_seq_num()
                 if seq_num == self.N:
                     seq_num = self.num_inorder()
                 else:
                     seq_num = self.N
-
-                print(self.N)
-
                 self.send(MSGType.ACK, bytes(), seq_num, address)
 
             if ph.get_seq_num() > self.N + self.window_size:
                 return ("Drop".encode(), NO_ADDRESS)
 
             if ph.get_msg_type() == MSGType.START:
-                # print("Recieved Start MSG")
                 return (data, address)
 
             if self.accepted:
-                # print("Recieved Other MSG")
                 return (data, address)
 
         return ("Drop".encode(), NO_ADDRESS)

@@ -13,7 +13,7 @@ class MSGType(IntEnum):
     END = 1
     DATA = 2
     ACK = 3
-    END_ACK = 3
+    END_ACK = 4
 
 
 class UnreliableSocket(socket.socket):
@@ -21,8 +21,7 @@ class UnreliableSocket(socket.socket):
     def __init__(self):
         """Starts UnreliableSocket"""
         super().__init__(socket.AF_INET, socket.SOCK_DGRAM)
-        # TODO lower to 0.5
-        self.settimeout(1)
+        self.settimeout(0.5)
 
     def bind(self, address: Tuple[str, int]):
         super().bind(address)
@@ -32,7 +31,7 @@ class UnreliableSocket(socket.socket):
         # Package Drop
         if random.random() < 0.15:
             return None, None
-
+        # Needed for timeout
         try:
             data, addr = super().recvfrom(1472)
         except socket.timeout:
