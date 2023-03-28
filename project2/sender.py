@@ -12,45 +12,54 @@ class Sender():
         if len(args) != 4:
             raise SystemError()
 
-        self.s = RDTSocket("Sender")
+        self.s = RDTSocket("Sender", int(args[2]), int(args[3]))
         self.reciever_ip = args[1]
-        self.reciever_port = int(args[2])
-        self.window_size = int(args[3])
+        # self.reciever_port =
+        # self.window_size = )
 
-        address = (self.reciever_ip, self.reciever_port)
+        address = (self.reciever_ip, self.s.reciever_port)
 
-        self.recieved_window: List[bool] = [False]*self.window_size
+        # self.sent: List[int] = []
+        # self.recieved_window: List[int] = [-1]*self.s.window_size
+        # self.recieved: List[int] = []
+
         print("Started Sender!")
         while True:
             self.s.connect(address)
             (data, addr) = self.s.recv()
-            # print(data)
+            print(data)
             if data.decode() == "Drop":
                 continue
             break
 
         print("Connection Acknowledged")
 
-        counter = 1
+        # counter = 1
+        self.s.N = 0
 
         with open("alice.txt", "r") as f:
             text = f.read().splitlines()
             linetotal = len(text)
             # counter = 0
             while True:
-                # print(rece=)
+                # print(self.s.N)
+                # print(self.msgs)
 
-                for i in range(self.window_size):
-                    if self.recieved_window[i]:
-                        self.recieved_window.pop()
-                        self.s.seq_num = self.s.seq_num + 1
-                        self.recieved_window.insert(self.window_size, False)
-                    else:
-                        break
+                # for i in range(self.window_size):
 
-                assert len(self.recieved_window) == self.window_size
+                #     if len(self.msgs) > 0:
 
-                if self.s.seq_num >= linetotal:
+                #         if self.recieved_window[i] == self.msgs[0]:
+                #             self.recieved_window[i] = -1
+                #             self.msgs.pop()
+                #             self.s.seq_num = self.s.seq_num + 1
+                #             # self.recieved_window.insert(self.window_size, False)
+                #         else:
+                #             break
+
+                # assert len(self.recieved_window) == self.window_size
+
+                if self.s.N >= linetotal:
                     self.s.close(address)
                     (data, addr) = self.s.recv()
                     if data.decode() == "Drop":
@@ -60,25 +69,37 @@ class Sender():
                     if PacketHeader(data=data).get_msg_type() == MSGType.ACK:
                         break
                 else:
-                    for i in range(self.window_size):
-                        if self.s.seq_num >= linetotal:
+                    for i in range(self.s.window_size):
+                        seq_num = self.s.N + i
+                        # print(seq_num)
+                        if seq_num >= linetotal:
                             continue
-                        if text[self.s.seq_num + i] == " ":
-                            text[self.s.seq_num + i] = "\n"
+                        if text[seq_num] == " ":
+                            text[seq_num] = "\n"
 
-                        print(f'Sending {text[self.s.seq_num + i].encode()}!')
-                        self.s.send(MSGType.DATA, text[self.s.seq_num + i].encode(), address)
+                        msg: bytes = text[seq_num].encode()
+                        print(f'Sending {msg}!')
+                        # self.msgs.append(seq_num)
+                        self.s.send(MSGType.DATA, msg, seq_num, address)
+
+                # 
+                # self.sent.sort()
 
                 (data, addr) = self.s.recv()
-                print(data)
+                print(f'Recieved {data}')
                 if data.decode() == "Drop":
                     continue
                 else:
-                    print(PacketHeader(data=data).get_msg_type())
-                    print(PacketHeader(data=data).get_seq_num())
-                    self.recieved_window[PacketHeader(data=data).get_seq_num() % self.window_size] = True
+                    seq_num = PacketHeader(data=data).get_seq_num()
+                    if seq_num != self.s.N:
+                        self.s.N = seq_num
+                        continue
+                    
+                    # if self.msgs.count(seq_num) > 0:
+                    #     self.msgs.remove(seq_num)
 
-                time.sleep(0.5)
+                # time.sleep(0.5)
+                # self.msgs.clear()
         print("Sent File!")
 
 

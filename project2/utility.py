@@ -21,6 +21,8 @@ class UnreliableSocket(socket.socket):
     def __init__(self):
         """Starts UnreliableSocket"""
         super().__init__(socket.AF_INET, socket.SOCK_DGRAM)
+        # TODO lower to 0.5
+        self.settimeout(1)
 
     def bind(self, address: Tuple[str, int]):
         super().bind(address)
@@ -28,10 +30,13 @@ class UnreliableSocket(socket.socket):
     def recvfrom(self):
         """Custom recvfrom with added package drop"""
         # Package Drop
-        if random.random() < 0.33:
+        if random.random() < 0.15:
             return None, None
 
-        data, addr = super().recvfrom(1472)
+        try:
+            data, addr = super().recvfrom(1472)
+        except socket.timeout:
+            return None, None
 
         # Data corruption
         if random.random() < 0.1:
