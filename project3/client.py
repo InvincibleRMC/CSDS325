@@ -15,24 +15,55 @@ class Client:
         if len(name) != 2:
             raise Exception
         self.name = name[1]
-        self.info: Dict[str, List[Pairs]] = {}
+        self.dv: Dict[str, int] = {}
 
     def send_join_message(self):
         """Sends JOIN message"""
         message: str = JOIN + " " + self.name
         self.s.sendto(message.encode(), self.ip_port)
 
-    def send_update(self):
+    def send_update_input(self):
         """Sends UPDATE message"""
         while True:
             print("Send a update!")
             msg: str = UPDATE + " " + input()
             self.s.sendto(msg.encode(), self.ip_port)
 
+    def send_update(self):
+        pair_list: List[Pairs] = []
+        for keys in self.dv.keys():
+            pair_list.append(Pairs(keys, self.dv[keys]))
+
+        new_msg: str = UPDATE + " " + str(pair_list)
+        self.s.sendto(new_msg.encode(), self.ip_port)
+
     def handle_incoming(self, msg: str):
         splitted = msg.split(" ", 1)
         name = splitted[0]
-        self.info[name] = str_to_pair_list(splitted[1])
+        pair_list = str_to_pair_list(splitted[1])
+        new_dv: Dict[str, int] = {}
+
+        if name == self.name:
+            for pair in pair_list:
+                new_dv[pair.Node] = pair.cost
+            # Add itself as dist 0
+            new_dv[self.name] = 0
+            self.dv = new_dv.copy()
+        else:
+            new_dv = self.dv
+            for keys in self.dv.keys():
+                for pair in pair_list:
+                    if pair.cost == -1:
+                        pair.cost = sys.maxsize
+
+                    new_dv[keys] = min(new_dv[keys], pair.cost + self.dv[pair.Node])
+
+            assert len(self.dv) == len(new_dv)
+            for keys in self.dv.keys():
+                if self.dv[keys] != new_dv[keys]:
+                    self.dv = new_dv.copy()
+                    self.send_update()
+                    break
 
     def recieve_incoming(self):
         """Recieves INCOMING message"""
@@ -43,20 +74,19 @@ class Client:
             message_contents = json.split(" ", 1)[1]
             if message_type == INCOMING:
                 self.handle_incoming(message_contents)
-                # TODO run DV
-                print(self.info)
+                print(self.dv)
             else:
                 print("Invalid Server Message")
 
     def main(self):
         """Starts Client"""
         # Kills with Control + C
-        signal.signal(signal.SIGINT, signal.SIG_DFL)
+        # signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.send_join_message()
 
         # Creates threads to avoid blocking
-        Thread(target=self.send_update).start()
+        # Thread(target=self.send_update_input).start()
         Thread(target=self.recieve_incoming).start()
 
 
-Client(sys.argv).main()
+# Client(sys.argv).main()

@@ -19,7 +19,7 @@ class Server:
         self.client_list[name] = addr
         print(self.client_list)
 
-        if len(self.client_list) == 2:
+        if len(self.client_list) == len(self.config):
             for node_name in self.client_list.keys():
                 client = self.client_list[node_name]
                 msg = self.config[node_name]
@@ -31,8 +31,13 @@ class Server:
             self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
 
     def update(self, message_contents: str):
+        splitted = message_contents.split(" ", 1)
+        node_name = splitted[0]
+        message_contents = splitted[1]
         pair_list = str_to_pair_list(message_contents)
-        # for pair in pair_list:
+        for pair in self.config[node_name]:
+            if pair.cost != -1:
+                self.s.sendto((INCOMING + " " + node_name + " " + str(pair_list)).encode(), self.client_list[node_name])
 
     def main(self):
         """Initializes Server"""
@@ -57,6 +62,8 @@ class Server:
             elif message_type == INCOMING:
                 continue
             elif message_type == UPDATE:
+                print(message_type)
+                print(message_contents)
                 self.update(message_contents)
             else:
                 print("Unkown message type ignoring message")
