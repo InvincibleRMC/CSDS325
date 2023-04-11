@@ -2,7 +2,7 @@ import socket
 import signal
 from typing import Dict, Tuple
 
-from constants import PORT_ADDRESS, JOIN, UPDATE, MESSAGE, INCOMING, STARTING_CONFIG, str_to_pair_list
+from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, STARTING_CONFIG, str_to_pair_list
 
 
 class Server:
@@ -25,10 +25,10 @@ class Server:
                 msg = self.config[node_name]
                 self.s.sendto((INCOMING + " " + node_name + " " + str(msg)).encode(), client)
 
-    def message(self, sender: Tuple[str], message_contents: str):
-        """Messages all clients from MESSAGE"""
-        for client in self.client_list:
-            self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
+    # def message(self, sender: Tuple[str], message_contents: str):
+    #     """Messages all clients from MESSAGE"""
+    #     for client in self.client_list:
+    #         self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
 
     def update(self, message_contents: str):
         # print(message_contents)
@@ -59,8 +59,8 @@ class Server:
             # Parses Message
             if message_type == JOIN:
                 self.greeting(addr, message_contents)
-            elif message_type == MESSAGE:
-                self.message(addr, message_contents)
+            # elif message_type == MESSAGE:
+            #     self.message(addr, message_contents)
             elif message_type == INCOMING:
                 continue
             elif message_type == UPDATE:

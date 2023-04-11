@@ -6,7 +6,7 @@ ADDRESS = "localhost"
 
 PORT_ADDRESS = (ADDRESS, PORT)
 
-MESSAGE: str = "MESSAGE"
+# MESSAGE: str = "MESSAGE"
 INCOMING: str = "INCOMING"
 
 JOIN: str = "JOIN"

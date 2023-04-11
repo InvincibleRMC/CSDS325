@@ -1,8 +1,8 @@
 import socket
-import signal
+# import signal
 import sys
 from typing import List, Dict
-from threading import Thread
+# from threading import Thread
 from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
 
 
@@ -51,7 +51,7 @@ class Client:
             # Add itself as dist 0
             new_dv[self.name] = 0
             self.dv = new_dv.copy()
-            print("Sending Init Update")
+            print(f"Sending Init Update from {self.name}")
             self.send_update()
         else:
             new_dv = self.dv
@@ -59,7 +59,10 @@ class Client:
                 for pair in pair_list:
                     if pair.cost == -1:
                         pair.cost = sys.maxsize
+                    # print(f'updateing {self.name} from msg recieved from {name}')
 
+                    # print(f"node = {keys} new cost = {min(new_dv[keys], pair.cost + self.dv[pair.Node])}")
+                    # pair.cost is wrong i think
                     new_dv[keys] = min(new_dv[keys], pair.cost + self.dv[pair.Node])
 
             assert len(self.dv) == len(new_dv)
@@ -67,7 +70,7 @@ class Client:
                 if self.dv[keys] != new_dv[keys]:
                     self.dv = new_dv.copy()
                     self.send_update()
-                    break
+                    return
             print(f"{self.name} done updating with DV table = {self.dv}")
 
     def recieve_incoming(self):
