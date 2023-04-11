@@ -39,7 +39,7 @@ class Server:
         pair_list = str_to_pair_list(message_contents)
         for pair in self.config[node_name]:
             if pair.cost != -1:
-                self.s.sendto((INCOMING + " " + node_name + " " + str(pair_list)).encode(), self.client_list[node_name])
+                self.s.sendto((INCOMING + " " + node_name + " " + str(pair_list)).encode(), self.client_list[pair.Node])
 
     def main(self):
         """Initializes Server"""

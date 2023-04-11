@@ -1,21 +1,23 @@
 import socket
-# import signal
+import signal
 import sys
 from typing import List, Dict
 # from threading import Thread
-from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
+from constants import ADDRESS, PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
 
 
 class Client:
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def __init__(self, name: List[str]):
+    def __init__(self, params: List[str]):
         self.ip_port = PORT_ADDRESS
-        if len(name) != 2:
+        if len(params) != 2:
             raise Exception
-        self.name = name[1]
+        self.name = params[1]
         self.dv: Dict[str, int] = {}
+
+        # self.s.bind((ADDRESS, int(params[2])))
 
     def send_join_message(self):
         """Sends JOIN message"""
@@ -47,23 +49,26 @@ class Client:
 
         if name == self.name:
             for pair in pair_list:
-                new_dv[pair.Node] = pair.cost
+                new_dv[pair.Node] = sys.maxsize if pair.cost is -1 else pair.cost
             # Add itself as dist 0
             new_dv[self.name] = 0
+            # if self.dv == {}:
             self.dv = new_dv.copy()
             print(f"Sending Init Update from {self.name}")
             self.send_update()
         else:
             new_dv = self.dv
-            for keys in self.dv.keys():
-                for pair in pair_list:
-                    if pair.cost == -1:
-                        pair.cost = sys.maxsize
-                    # print(f'updateing {self.name} from msg recieved from {name}')
+            # for keys in self.dv.keys():
+            for pair in pair_list:
 
-                    # print(f"node = {keys} new cost = {min(new_dv[keys], pair.cost + self.dv[pair.Node])}")
-                    # pair.cost is wrong i think
-                    new_dv[keys] = min(new_dv[keys], pair.cost + self.dv[pair.Node])
+                # print(pair_list)
+                # print(f'updateing {self.name} from msg recieved from {name}')
+
+                # print(f"node = {keys} new cost = {min(new_dv[keys], pair.cost + self.dv[pair.Node])}")
+                # pair.cost is wrong i think
+                # if pair.Node == keys:
+                # print(f'cost from {name} to {pair.Node} is {pair.cost}')
+                new_dv[pair.Node] = min(new_dv[pair.Node], pair.cost + self.dv[name])
 
             assert len(self.dv) == len(new_dv)
             for keys in self.dv.keys():
@@ -71,6 +76,7 @@ class Client:
                     self.dv = new_dv.copy()
                     self.send_update()
                     return
+            print(f'{new_dv}')
             print(f"{self.name} done updating with DV table = {self.dv}")
 
     def recieve_incoming(self):
@@ -82,7 +88,7 @@ class Client:
             message_contents = json.split(" ", 1)[1]
             if message_type == INCOMING:
                 self.handle_incoming(message_contents)
-                print(self.dv)
+                # print(self.dv)
             else:
                 print("Invalid Server Message")
 
@@ -98,4 +104,9 @@ class Client:
         self.recieve_incoming()
 
 
+# # Kills with Control + C
+# signal.signal(signal.SIGINT, signal.SIG_DFL)
 # Client(sys.argv).main()
+
+# print(str(sys.argv[0]))
+# Client(sys.argv[1]).main()
