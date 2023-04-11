@@ -31,8 +31,10 @@ class Server:
             self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
 
     def update(self, message_contents: str):
+        # print(message_contents)
         splitted = message_contents.split(" ", 1)
         node_name = splitted[0]
+        # print(node_name)
         message_contents = splitted[1]
         pair_list = str_to_pair_list(message_contents)
         for pair in self.config[node_name]:
@@ -52,7 +54,7 @@ class Server:
             # Decodes and splits data
             json = data.decode()
             message_type = json.split(" ")[0]
-            message_contents = json.split(" ")[1]
+            message_contents = json.split(" ", 1)[1]
 
             # Parses Message
             if message_type == JOIN:
@@ -62,8 +64,8 @@ class Server:
             elif message_type == INCOMING:
                 continue
             elif message_type == UPDATE:
-                print(message_type)
-                print(message_contents)
+                # print(json)
+                # print(message_contents)
                 self.update(message_contents)
             else:
                 print("Unkown message type ignoring message")

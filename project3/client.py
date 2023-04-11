@@ -22,22 +22,24 @@ class Client:
         message: str = JOIN + " " + self.name
         self.s.sendto(message.encode(), self.ip_port)
 
-    def send_update_input(self):
-        """Sends UPDATE message"""
-        while True:
-            print("Send a update!")
-            msg: str = UPDATE + " " + input()
-            self.s.sendto(msg.encode(), self.ip_port)
+    # def send_update_input(self):
+    #     """Sends UPDATE message"""
+    #     while True:
+    #         print("Send a update!")
+    #         msg: str = UPDATE + " " + input()
+    #         self.s.sendto(msg.encode(), self.ip_port)
 
     def send_update(self):
         pair_list: List[Pairs] = []
         for keys in self.dv.keys():
             pair_list.append(Pairs(keys, self.dv[keys]))
 
-        new_msg: str = UPDATE + " " + str(pair_list)
+        new_msg: str = UPDATE + " " + self.name + " " + str(pair_list)
         self.s.sendto(new_msg.encode(), self.ip_port)
 
     def handle_incoming(self, msg: str):
+        # print("HERE")
+        # print(msg)
         splitted = msg.split(" ", 1)
         name = splitted[0]
         pair_list = str_to_pair_list(splitted[1])
@@ -49,6 +51,8 @@ class Client:
             # Add itself as dist 0
             new_dv[self.name] = 0
             self.dv = new_dv.copy()
+            print("Sending Init Update")
+            self.send_update()
         else:
             new_dv = self.dv
             for keys in self.dv.keys():
@@ -64,6 +68,7 @@ class Client:
                     self.dv = new_dv.copy()
                     self.send_update()
                     break
+            print(f"{self.name} done updating with DV table = {self.dv}")
 
     def recieve_incoming(self):
         """Recieves INCOMING message"""
@@ -85,8 +90,9 @@ class Client:
         self.send_join_message()
 
         # Creates threads to avoid blocking
-        # Thread(target=self.send_update_input).start()
-        Thread(target=self.recieve_incoming).start()
+        # Thread(target=self.send_upeedate_input).start()
+        # Thread(target=self.recieve_incoming).start()
+        self.recieve_incoming()
 
 
 # Client(sys.argv).main()
