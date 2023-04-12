@@ -8,6 +8,7 @@ from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, STARTING_CONFIG, str
 class Server:
 
     def __init__(self):
+        """Server Constructor"""
         self.ip_port = PORT_ADDRESS
         self.config = STARTING_CONFIG
 
@@ -25,16 +26,10 @@ class Server:
                 msg = self.config[node_name]
                 self.s.sendto((INCOMING + " " + node_name + " " + str(msg)).encode(), client)
 
-    # def message(self, sender: Tuple[str], message_contents: str):
-    #     """Messages all clients from MESSAGE"""
-    #     for client in self.client_list:
-    #         self.s.sendto((INCOMING + " " + str(sender) + ": " + message_contents).encode(), client)
-
     def update(self, message_contents: str):
-        # print(message_contents)
+        """Propgates update to neighbors"""
         splitted = message_contents.split(" ", 1)
         node_name = splitted[0]
-        # print(node_name)
         message_contents = splitted[1]
         pair_list = str_to_pair_list(message_contents)
         for pair in self.config[node_name]:
@@ -59,13 +54,9 @@ class Server:
             # Parses Message
             if message_type == JOIN:
                 self.greeting(addr, message_contents)
-            # elif message_type == MESSAGE:
-            #     self.message(addr, message_contents)
             elif message_type == INCOMING:
                 continue
             elif message_type == UPDATE:
-                # print(json)
-                # print(message_contents)
                 self.update(message_contents)
             else:
                 print("Unkown message type ignoring message")
