@@ -47,6 +47,4 @@ def str_to_pair_list(message_contents: str) -> List[Pairs]:
         cost = int(splitted[counter + 1])
         pair_list.append(Pairs(node, cost))
         counter = counter + 2
-    # print("PL")
-    # print(pair_list)
     return pair_list

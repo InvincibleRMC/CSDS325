@@ -1,23 +1,27 @@
 import socket
-import signal
+# import signal
 import sys
 from typing import List, Dict
-# from threading import Thread
-from constants import ADDRESS, PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
+from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
+from multiprocessing.managers import BaseManager
 
 
 class Client:
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def __init__(self, params: List[str]):
+    def __init__(self, name: str):
         self.ip_port = PORT_ADDRESS
-        if len(params) != 2:
-            raise Exception
-        self.name = params[1]
+        # if len(params) != 2:
+        #     raise Exception
+        self.name = name
         self.dv: Dict[str, int] = {}
 
-        # self.s.bind((ADDRESS, int(params[2])))
+    def get_name(self) -> str:
+        return self.name
+
+    def get_dv(self) -> Dict[str, int]:
+        return self.dv
 
     def send_join_message(self):
         """Sends JOIN message"""
@@ -49,7 +53,7 @@ class Client:
 
         if name == self.name:
             for pair in pair_list:
-                new_dv[pair.Node] = sys.maxsize if pair.cost is -1 else pair.cost
+                new_dv[pair.Node] = sys.maxsize if pair.cost == -1 else pair.cost
             # Add itself as dist 0
             new_dv[self.name] = 0
             # if self.dv == {}:
@@ -104,6 +108,8 @@ class Client:
         self.recieve_incoming()
 
 
+class ClientManager(BaseManager):
+    pass
 # # Kills with Control + C
 # signal.signal(signal.SIGINT, signal.SIG_DFL)
 # Client(sys.argv).main()
