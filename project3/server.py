@@ -21,6 +21,13 @@ class Server:
         print(self.client_list)
 
         if len(self.client_list) == len(self.config):
+            hash_val: Dict[Tuple[str], bool] = dict()
+            for keys in self.client_list:
+                if self.client_list[keys] in hash_val:
+                    raise Exception("UDP ports are not unique please restart computer.")
+                else:
+                    hash_val[self.client_list[keys]] = True
+
             for node_name in self.client_list.keys():
                 client = self.client_list[node_name]
                 msg = self.config[node_name]
