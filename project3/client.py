@@ -1,21 +1,18 @@
 import socket
 # import signal
 import sys
-from typing import List, Dict
-from constants import PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
+from typing import List, Dict, Any
+from constants import ADDRESS, PORT_ADDRESS, JOIN, UPDATE, INCOMING, Pairs, str_to_pair_list
 from multiprocessing.managers import BaseManager
 
 
 class Client:
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    def __init__(self, name: str):
+    def __init__(self, name: str, dv: Dict[str, int] = {}):
         self.ip_port = PORT_ADDRESS
-        # if len(params) != 2:
-        #     raise Exception
         self.name = name
-        self.dv: Dict[str, int] = {}
+        self.dv: Dict[str, int] = dv
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def get_name(self) -> str:
         return self.name
@@ -27,6 +24,9 @@ class Client:
         """Sends JOIN message"""
         message: str = JOIN + " " + self.name
         self.s.sendto(message.encode(), self.ip_port)
+
+    def __str__(self):
+        return f'Client {self.name} has DV = {self.dv}'
 
     # def send_update_input(self):
     #     """Sends UPDATE message"""
@@ -55,7 +55,7 @@ class Client:
             for pair in pair_list:
                 new_dv[pair.Node] = sys.maxsize if pair.cost == -1 else pair.cost
             # Add itself as dist 0
-            new_dv[self.name] = 0
+            # new_dv[self.name] = 0
             # if self.dv == {}:
             self.dv = new_dv.copy()
             print(f"Sending Init Update from {self.name}")
@@ -98,6 +98,9 @@ class Client:
 
     def main(self):
         """Starts Client"""
+
+        # if port != -1:
+        #     self.s.bind((ADDRESS, port))
         # Kills with Control + C
         # signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.send_join_message()
