@@ -56,8 +56,8 @@ class Client:
             print(f'from {name} {new_dv}')
             print(f"{self.name} done updating with DV table = {self.dv}")
 
-    def recieve_incoming(self):
-        """Recieves INCOMING message"""
+    def receive_incoming(self):
+        """Receives INCOMING message"""
         while True:
             data = self.s.recv(1024)
             json = data.decode()
@@ -71,4 +71,4 @@ class Client:
     def main(self):
         """Starts Client"""
         self.send_join_message()
-        self.recieve_incoming()
+        self.receive_incoming()

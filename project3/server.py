@@ -21,6 +21,8 @@ class Server:
         print(self.client_list)
 
         if len(self.client_list) == len(self.config):
+
+            # Hopefully doesn't get triggered but sometimes UDP ports would not be unique
             hash_val: Dict[Tuple[str], bool] = dict()
             for keys in self.client_list:
                 if self.client_list[keys] in hash_val:
@@ -34,7 +36,7 @@ class Server:
                 self.s.sendto((INCOMING + " " + node_name + " " + str(msg)).encode(), client)
 
     def update(self, message_contents: str):
-        """Propgates update to neighbors"""
+        """Propagates update to neighbors"""
         splitted = message_contents.split(" ", 1)
         node_name = splitted[0]
         message_contents = splitted[1]
@@ -51,7 +53,7 @@ class Server:
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         print("Server Running")
         while True:
-            # Recives message and address of sender
+            # Receives message and address of sender
             data, addr = self.s.recvfrom(1024)
             # Decodes and splits data
             json = data.decode()
@@ -66,7 +68,7 @@ class Server:
             elif message_type == UPDATE:
                 self.update(message_contents)
             else:
-                print("Unkown message type ignoring message")
+                print("Unknown message type ignoring message")
 
 
 Server().main()
