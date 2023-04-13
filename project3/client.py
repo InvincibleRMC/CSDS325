@@ -34,26 +34,23 @@ class Client:
         pair_list = str_to_pair_list(splitted[1])
         new_dv: Dict[str, int] = {}
 
-        if name == self.name:
+        if name == self.name and self.dv == {}:
             for pair in pair_list:
                 new_dv[pair.Node] = sys.maxsize if pair.cost == -1 else pair.cost
-            if self.dv == {}:
-                self.dv = new_dv.copy()
-                print(f"Sending Init Update from {self.name}")
-                self.send_update()
-        else:
-            new_dv = self.dv.copy()
-            for pair in pair_list:
-                new_dv[pair.Node] = min(new_dv[pair.Node], pair.cost + self.dv[name])
 
-            assert len(self.dv) == len(new_dv)
+            self.dv = new_dv.copy()
+            print(f"Sending Init Update from {self.name}")
+            self.send_update()
+        else:
+            old_dv = self.dv.copy()
+            for pair in pair_list:
+                self.dv[pair.Node] = min(self.dv[pair.Node], pair.cost + self.dv[name])
+
             for keys in self.dv.keys():
-                if self.dv[keys] != new_dv[keys]:
-                    self.dv = new_dv.copy()
+                if self.dv[keys] != old_dv[keys]:
                     self.send_update()
                     return
 
-            print(f'from {name} {new_dv}')
             print(f"{self.name} done updating with DV table = {self.dv}")
 
     def receive_incoming(self):
