@@ -6,8 +6,6 @@ python server.py localhost 47590
 
 To run client
 ```
-python client.py localhost 47590 http://www.example.com 
+export http_proxy=http://127.0.0.1:47590 && curl http://www.example.com/
 ```
 Completed with Python 3.9
-
-NOTE: Output looks different than result of wget but is still recieving info from HTTP server

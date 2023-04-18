@@ -18,16 +18,21 @@ client_sock.bind((args[1], int(args[2])))
 client_sock.listen(1)
 conn, addr = client_sock.accept()
 while True:
-    data = conn.recv(1024)
+    data = conn.recv(4096)
     if not data:
         break
 
-    link = data.decode()
-    link = link.replace("http://", "")
+    link = data.decode().replace("http://", "")
 
-    http_sock.connect((link, HTTP_PORT))
+    split = link.split("/", 1)
 
-    GET = f"GET / HTTP/1.1\r\nHost:{link}\r\nConnection: close\r\n\r\n".encode()
+    name = split[0].replace("GET ", "")
+
+    path = (split[1].split(" ", 1))[0]
+
+    http_sock.connect((name, HTTP_PORT))
+
+    GET = f"GET /{path} HTTP/1.1\r\nHost:{name}\r\nConnection: close\r\n\r\n".encode()
 
     print("Send Request from Proxy")
     http_sock.send(GET)
